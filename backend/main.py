@@ -1,3 +1,7 @@
+
+
+print("MAIN.PY STARTED SUCCESSFULLY")
+
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
