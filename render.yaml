@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: neurodrive-ai-backend
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    plan: standard
+    healthCheckPath: /health
+    envVars:
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: MODEL_PATH
+        value: /app/yolov8n.pt

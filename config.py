@@ -1,0 +1,1 @@
+Driver_threshold = 0.9  # Minimum similarity for face recognition
