@@ -1,38 +1,51 @@
 FROM python:3.10.14-slim-bookworm
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PIP_NO_CACHE_DIR=1
-ENV YOLO_CONFIG_DIR=/tmp/ultralytics
-ENV MPLCONFIGDIR=/tmp/matplotlib
-ENV OMP_NUM_THREADS=1
-ENV MKL_NUM_THREADS=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    YOLO_CONFIG_DIR=/tmp/ultralytics \
+    MPLCONFIGDIR=/tmp/matplotlib \
+    OMP_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1
 
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libopenblas-dev \
-    liblapack-dev \
-    libx11-6 \
-    libgl1 \
-    libglib2.0-0 \
-    libgomp1 \
-    libjpeg-dev \
-    libpng-dev \
+        build-essential \
+        libopenblas-dev \
+        liblapack-dev \
+        libx11-6 \
+        libgl1 \
+        libglib2.0-0 \
+        libgomp1 \
+        libpng-dev \
+        libjpeg-dev \
+        libatlas-base-dev \
+        pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python -m pip install --upgrade pip setuptools wheel
+RUN pip install --upgrade pip setuptools wheel \
+    && pip install cmake==3.22.6
 
-RUN python -m pip install cmake==3.22.6
+# install dlib ONLY ONCE
+RUN pip install --no-build-isolation dlib==19.24.6
 
 COPY requirements.txt /app/requirements.txt
 
-RUN python -m pip install --no-cache-dir -r /app/requirements.txt
+RUN pip install --no-cache-dir \
+        --extra-index-url https://download.pytorch.org/whl/cpu \
+        -r /app/requirements.txt
 
-RUN python -m pip install --no-build-isolation dlib==19.24.2
+# install face_recognition WITHOUT dlib dependency
+RUN pip install --no-deps face_recognition==1.3.0
 
-RUN python -m pip install uvicorn[standard]==0.35.0
+RUN pip uninstall -y opencv-python opencv-contrib-python \
+                     opencv-python-headless 2>/dev/null || true \
+    && pip install --no-cache-dir opencv-python-headless==4.8.1.78
+
+RUN pip install --no-cache-dir "uvicorn[standard]==0.35.0"
+
+RUN python -m uvicorn --version
 
 COPY . /app
 
