@@ -4,3 +4,7 @@ __pycache__/
 *.log
 dist/
 .env
+vite.err.log
+vite.out.log
+uvicorn.err.log
+uvicorn.out.log
