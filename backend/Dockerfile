@@ -22,9 +22,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt
-
+RUN cat /app/requirements.txt
 RUN pip install --upgrade pip setuptools wheel \
-    && pip install -r /app/requirements.txt \
+    && pip install --no-cache-dir -r /app/requirements.txt \
     && pip uninstall -y opencv-python || true \
     && pip install opencv-python-headless==4.8.1.78
 
