@@ -21,7 +21,7 @@ except ImportError:
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR.parent
 FRONTEND_DIST_DIR = PROJECT_DIR / "frontend" / "dist"
-MODEL_PATH = Path(os.getenv("MODEL_PATH", PROJECT_DIR / "yolov8n.pt"))
+MODEL_PATH = Path("yolov8n.pt")
 CORS_ORIGINS = [
     origin.strip()
     for origin in os.getenv("CORS_ORIGINS", "*").split(",")
