@@ -7,6 +7,6 @@ services:
     healthCheckPath: /health
     envVars:
       - key: CORS_ORIGINS
-        value: "*"
+        value: https://your-vercel-app.vercel.app
       - key: MODEL_PATH
         value: /app/yolov8n.pt

@@ -18,6 +18,11 @@ BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR.parent
 FRONTEND_DIST_DIR = PROJECT_DIR / "frontend" / "dist"
 MODEL_PATH = Path(os.getenv("MODEL_PATH", PROJECT_DIR / "yolov8n.pt"))
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", "*").split(",")
+    if origin.strip()
+]
 
 detector: WebDrowsinessDetector | None = None
 
@@ -25,6 +30,8 @@ detector: WebDrowsinessDetector | None = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global detector
+    if not MODEL_PATH.exists():
+        raise RuntimeError(f"YOLO model file not found: {MODEL_PATH}")
     detector = WebDrowsinessDetector(MODEL_PATH)
     yield
 
@@ -37,13 +44,13 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
+    allow_origins=CORS_ORIGINS,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-if FRONTEND_DIST_DIR.exists():
+if (FRONTEND_DIST_DIR / "assets").exists():
     app.mount("/assets", StaticFiles(directory=FRONTEND_DIST_DIR / "assets"), name="assets")
 
 
