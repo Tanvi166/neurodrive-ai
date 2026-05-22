@@ -4,26 +4,6 @@ import cv2
 import threading
 from utils import *
 from config import Driver_threshold
-# from utils import update_baseline, update_mode, yolo_worker
-
-# from utils import (
-#     EAR_THRESHOLD,
-#     WINDOW_NAME,
-#     create_state,
-#     draw_driver_box,
-#     draw_hud,
-#     extract_face_encoding,
-#     get_face_locations,
-#     get_largest_face_location,
-#     get_drowsiness_suppression_reason,
-#     handle_drowsiness,
-#     handle_phone_alert,
-#     init_camera,
-#     init_models,
-#     run_driver_face_detection,
-#     run_phone_detection,
-#     update_driver_match,
-# )
 
 
 def parse_args():
@@ -39,46 +19,6 @@ def parse_args():
         help="Eye aspect ratio threshold for closed eyes",
     )
     return parser.parse_args()
-
-
-# OLD CODE (BACKUP)
-# This version processed whichever face MediaPipe returned first. It is kept
-# here as a backup, but the working code below uses face re-identification so
-# only the enrolled driver is checked for drowsiness.
-#
-# def main():
-#     args = parse_args()
-#     app_state = create_state()
-#     model, face_mesh = init_models(args.model)
-#     cap = init_camera(args.camera, args.width, args.height)
-#
-#     try:
-#         while True:
-#             ret, frame = cap.read()
-#             if not ret:
-#                 app_state["status"] = "CAMERA ERROR"
-#                 break
-#
-#             run_phone_detection(frame, model, app_state)
-#             ear, left_coords, right_coords = run_face_detection(frame, face_mesh)
-#
-#             if ear is not None:
-#                 handle_drowsiness(frame, ear, app_state, args.ear_threshold)
-#             else:
-#                 app_state["eyes_closed_since"] = None
-#                 app_state["status"] = "NO FACE"
-#
-#             handle_phone_alert(frame, app_state)
-#             draw_hud(frame, ear, left_coords, right_coords, app_state)
-#
-#             cv2.imshow(WINDOW_NAME, frame)
-#             if cv2.waitKey(1) & 0xFF in (27, ord("q")):
-#                 break
-#     finally:
-#         cap.release()
-#         face_mesh.close()
-#         cv2.destroyAllWindows()
-
 
 # NEW CODE (FACE RE-IDENTIFICATION)
 def capture_driver_encoding(cap):
@@ -145,63 +85,6 @@ def capture_driver_encoding(cap):
             driver_encoding = extract_face_encoding(rgb_frame, driver_location)
             if driver_encoding is not None:
                 return driver_encoding
-
-
-# OLD CODE (BACKUP)
-# This face re-identification loop recomputed driver embeddings every frame.
-# It worked, but it was too slow for real-time video on many machines.
-#
-# def main():
-#     args = parse_args()
-#     app_state = create_state()
-#     model, face_mesh = init_models(args.model)
-#     cap = init_camera(args.camera, args.width, args.height)
-#
-#     try:
-#         driver_encoding = capture_driver_encoding(cap)
-#         if driver_encoding is None:
-#             return
-#
-#         while True:
-#             ret, frame = cap.read()
-#             if not ret:
-#                 app_state["status"] = "CAMERA ERROR"
-#                 break
-#
-#             run_phone_detection(frame, model, app_state)
-#             driver_location, match_distance = find_driver_face(
-#                 frame,
-#                 driver_encoding,
-#                 tolerance=FACE_MATCH_TOLERANCE,
-#             )
-#
-#             if driver_location is not None:
-#                 draw_driver_box(frame, driver_location, match_distance)
-#                 ear, left_coords, right_coords = run_driver_face_detection(
-#                     frame,
-#                     face_mesh,
-#                     driver_location,
-#                 )
-#             else:
-#                 ear, left_coords, right_coords = None, None, None
-#
-#             if driver_location is not None and ear is not None:
-#                 handle_drowsiness(frame, ear, app_state, args.ear_threshold)
-#             else:
-#                 app_state["eyes_closed_since"] = None
-#                 app_state["status"] = "DRIVER NOT FOUND"
-#
-#             handle_phone_alert(frame, app_state)
-#             draw_hud(frame, ear, left_coords, right_coords, app_state)
-#
-#             cv2.imshow(WINDOW_NAME, frame)
-#             if cv2.waitKey(1) & 0xFF in (27, ord("q")):
-#                 break
-#     finally:
-#         cap.release()
-#         face_mesh.close()
-#         cv2.destroyAllWindows()
-
 
 # NEW OPTIMIZED CODE
 

@@ -206,7 +206,7 @@ def get_face_locations(frame, process_width=None):
     process_frame, scale = resize_frame_for_width(frame, process_width or frame.shape[1])
     rgb_frame = cv2.cvtColor(process_frame, cv2.COLOR_BGR2RGB)
     rgb_frame = np.ascontiguousarray(rgb_frame, dtype=np.uint8)
-    face_locations = face_recognition.face_locations(rgb_frame)
+    face_locations = face_recognition.face_locations(rgb_frame, model="hog")
     return rgb_frame, face_locations, scale
 
 

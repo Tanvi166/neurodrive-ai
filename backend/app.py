@@ -21,7 +21,7 @@ except ImportError:
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR.parent
 FRONTEND_DIST_DIR = PROJECT_DIR / "frontend" / "dist"
-MODEL_PATH = Path("yolov8n.pt")
+MODEL_PATH = PROJECT_DIR / "yolov8n.pt"
 CORS_ORIGINS = [
     origin.strip()
     for origin in os.getenv("CORS_ORIGINS", "*").split(",")
@@ -32,7 +32,7 @@ detector: WebDrowsinessDetector | None = None
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(api: FastAPI):
     global detector
     if not MODEL_PATH.exists():
         raise RuntimeError(f"YOLO model file not found: {MODEL_PATH}")
@@ -40,13 +40,13 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(
+api = FastAPI(
     title="Cognitive Fatigue & Driver Attention API",
     version="1.0.0",
     lifespan=lifespan,
 )
 
-app.add_middleware(
+api.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
     allow_credentials=False,
@@ -55,16 +55,9 @@ app.add_middleware(
 )
 
 if (FRONTEND_DIST_DIR / "assets").exists():
-    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST_DIR / "assets"), name="assets")
+    api.mount("/assets", StaticFiles(directory=FRONTEND_DIST_DIR / "assets"), name="assets")
 
 
-# OLD CODE (BACKUP)
-# The desktop app captured frames and rendered a local OpenCV window.
-#
-# cap = cv2.VideoCapture(0)
-# while True:
-#     ret, frame = cap.read()
-#     cv2.imshow("Drowsiness & Phone Detection", frame)
 
 
 # NEW CODE (FASTAPI REST API)
@@ -80,7 +73,7 @@ def get_detector() -> WebDrowsinessDetector:
     return detector
 
 
-@app.get("/health")
+@api.get("/health")
 async def health():
     return {
         "ok": True,
@@ -89,7 +82,7 @@ async def health():
     }
 
 
-@app.get("/session-stats")
+@api.get("/session-stats")
 async def session_stats():
     try:
         return get_detector().get_session_stats()
@@ -97,7 +90,7 @@ async def session_stats():
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-@app.post("/reset-session")
+@api.post("/reset-session")
 async def reset_session():
     try:
         return get_detector().reset_session()
@@ -105,7 +98,7 @@ async def reset_session():
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-@app.post("/analyze-frame")
+@api.post("/analyze-frame")
 async def analyze_frame(
     request: Request,
     image_base64: str | None = Form(default=None),
@@ -132,7 +125,7 @@ async def analyze_frame(
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-@app.post("/predict")
+@api.post("/predict")
 async def predict_compat(
     request: Request,
     image_base64: str | None = Form(default=None),
@@ -141,7 +134,7 @@ async def predict_compat(
     return await analyze_frame(request=request, image_base64=image_base64, file=file)
 
 
-@app.get("/")
+@api.get("/")
 async def root():
     index_file = FRONTEND_DIST_DIR / "index.html"
     if index_file.exists():

@@ -6,5 +6,5 @@ dist/
 .env
 vite.err.log
 vite.out.log
-uvicorn.err.log
-uvicorn.out.log
+del uvicorn.err.log
+del uvicorn.out.log

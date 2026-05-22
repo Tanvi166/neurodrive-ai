@@ -8,7 +8,7 @@ The system uses a browser webcam feed, sends compressed frames to a FastAPI back
 
 ```text
 backend/
-  main.py
+  app.py
   model_utils.py
   requirements.txt
   Dockerfile
