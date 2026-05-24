@@ -4,6 +4,8 @@ frontend/node_modules/
 frontend/dist/
 __pycache__/
 backend/__pycache__/
+backend/uvicorn.err.log
+backend/uvicorn.out.log
 *.pyc
 *.pyo
 *.log
